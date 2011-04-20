@@ -13,6 +13,7 @@
 %token <int> INT
 
 %left AND
+%left EQ
 %left PLUS MINUS
 %left TIMES
 %left TIMESTIMES
@@ -79,6 +80,8 @@ exp:
   { Pow ($1, $3) }
   | exp AND exp
   { And ($1, $3) }
+  | exp EQ exp
+  { Eq ($1, $3) }
   | simple_exp COLONCOLON simple_exp
   { Cons ($1, $3) }
   ;

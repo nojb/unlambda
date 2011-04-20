@@ -16,6 +16,7 @@ type exp =
   | Pow of exp * exp
   | Rec of string * (string list * exp) * exp
   | And of exp * exp
+  | Eq of exp * exp
   | Or of exp * exp
   | Cons of exp * exp
   | Nil
@@ -100,6 +101,8 @@ let rec compile = function
         L.App (ycomb, L.Lam (x, compile (Lam (xs, y)))))
   | And (x, y) ->
       compile (If (x, y, False))
+  | Eq (x, y) ->
+      compile (And (IsZero (Sub (x, y)), IsZero (Sub (y, x))))
   | Or (x, y) ->
       compile (If (x, True, y))
   | Pair (x, y) ->
