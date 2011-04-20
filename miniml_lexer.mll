@@ -5,6 +5,8 @@
 rule token = parse
   | ['\n''\t'' ']
   { token lexbuf }
+  | ';'
+  { SEMI }
   | "is_zero"
   { IS_ZERO }
   | '-'
@@ -19,6 +21,12 @@ rule token = parse
   { LPAREN }
   | ')'
   { RPAREN }
+  | '['
+  { LBRACK }
+  | ']'
+  { RBRACK }
+  | "::"
+  { COLONCOLON }
   | "rec"
   { REC }
   | "true"
@@ -31,6 +39,8 @@ rule token = parse
   { EQ }
   | "in"
   { IN }
+  | "&&"
+  { AND }
   | "fun"
   { FUN }
   | "->"

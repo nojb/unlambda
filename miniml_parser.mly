@@ -2,7 +2,8 @@
   open Miniml
 %}
 
-%token IS_ZERO
+%token AND SEMI
+%token IS_ZERO LBRACK RBRACK COLONCOLON
 %token REC TIMES
 %token TIMESTIMES MINUS
 %token LPAREN RPAREN TRUE FALSE EOF
@@ -11,6 +12,7 @@
 %token <string> IDENT
 %token <int> INT
 
+%left AND
 %left PLUS MINUS
 %left TIMES
 %left TIMESTIMES
@@ -36,6 +38,10 @@ simple_exp:
   { True }
   | FALSE
   { False }
+  | LBRACK RBRACK
+  { Nil }
+  | LBRACK xs = separated_nonempty_list (SEMI, exp) RBRACK
+  { List.fold_right (fun x y -> Cons (x, y)) xs Nil }
   ;
 
 exp:
@@ -71,4 +77,8 @@ exp:
   { Sub ($1, $3) }
   | exp TIMESTIMES exp
   { Pow ($1, $3) }
+  | exp AND exp
+  { And ($1, $3) }
+  | simple_exp COLONCOLON simple_exp
+  { Cons ($1, $3) }
   ;

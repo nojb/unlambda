@@ -1,36 +1,19 @@
-let compile inch outch =
-  Unlambda.output outch
-    (Lambda.unlambda
-      (Lambda.abstract
-        (Miniml.compile
-          (Miniml_parser.prog Miniml_lexer.token
-            (Lexing.from_channel inch))))) in
+module M = Map.Make (String)
 
 let lambda inch outch =
   Lambda.print_lambda
     (Miniml.compile
       (Miniml_parser.prog Miniml_lexer.token
-        (Lexing.from_channel inch))) in
+        (Lexing.from_channel inch)))
 
-let eval inch =
-  Unlambda.eval
-    (Lambda.unlambda
-      (Lambda.abstract
-        (Miniml.compile
-          (Miniml_parser.prog Miniml_lexer.token
-            (Lexing.from_channel inch))))) in
+let compile inch =
+  Miniml.compile
+    (Miniml_parser.prog Miniml_lexer.token
+      (Lexing.from_channel inch))
 
-let unlambda inch =
-    (Lambda.unlambda
-      (Lambda.abstract
-        (Miniml.compile
-          (Miniml_parser.prog Miniml_lexer.token
-            (Lexing.from_channel inch)))))
-in
-  lambda stdin stdout;
-  (* let x = unlambda stdin in
-  print_endline "about to eval";
-  print_int (Unlambda.natify (Unlambda.eval x));
-  print_newline () *)
-  (* ignore (eval stdin) *)
-(*  Printf.fprintf stdout "%t\n%!" (compile stdin) *)
+let () =
+  let x = compile stdin in
+  Format.printf "%a\n%!"
+    Lambda.pr_lambda x;
+  let y = Lambda.eval M.empty x in
+  Format.printf "%d\n%!" (Lambda.natify y)

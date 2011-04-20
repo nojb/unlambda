@@ -15,10 +15,20 @@ type exp =
   | Sub of exp * exp
   | Pow of exp * exp
   | Rec of string * (string list * exp) * exp
+  | And of exp * exp
+  | Or of exp * exp
+  | Cons of exp * exp
+  | Nil
+  | IsNil of exp
+  | Pair of exp * exp
+  | Fst of exp
+  | Snd of exp
+  | Head of exp
+  | Tail of exp
 
 let v = L.Lam ("_", L.Var "_")
-let t = L.Lam ("_t", L.Lam ("_f", L.App (L.Var "_t", v)))
-let f = L.Lam ("_t", L.Lam ("_f", L.App (L.Var "_f", v)))
+let t = L.Lam ("_a", L.Lam ("_b", L.App (L.Var "_a", v)))
+let f = L.Lam ("_a", L.Lam ("_b", L.App (L.Var "_b", v)))
 
 let rec compile = function
   | Let (x, y, z) ->
@@ -39,12 +49,11 @@ let rec compile = function
       compile (Lam ([x], Lam (xs, y)))
   | True ->
       t
-      (* L.Lam ("_t", L.Lam ("_", L.App (L.Var "_t", v))) *)
   | False ->
       f
-      (* L.Lam ("_", L.Lam ("_f", L.App (L.Var "_f", v))) *)
   | If (x, y, z) ->
-      L.App (L.App (compile x, L.Lam ("_", compile y)), L.Lam ("_", compile z))
+      L.App (L.App (compile x, L.Lam ("_", compile y)),
+        L.Lam ("_", compile z))
   | Int 0 ->
       L.Lam ("_f", L.Lam ("_z", L.Var "_z"))
   | Int 1 ->
@@ -68,15 +77,49 @@ let rec compile = function
   | Sub (x, y) ->
       let pred =
         Lam (["_n"; "_f"; "_x"],
-          App (Var "_n", [Lam (["_g"; "_h"], App (Var "_g", [Var "_f"]));
+          App (Var "_n", [Lam (["_g"; "_h"], App (Var "_h",
+            [App (Var "_g", [Var "_f"])]));
             Lam (["_u"], Var "_x"); Lam (["_u"], Var "_u")])) in
-      L.App (L.App (compile x, compile pred), compile y)
+      L.App (L.App (compile y, compile pred), compile x)
   | Pow (x, y) ->
-      L.App (compile x, compile y)
+      L.App (compile y, compile x)
   | Rec (x, (xs, y), z) ->
       let ycomb =
-        L.Lam ("_f",
+        L.App (L.Lam ("_y",
+          L.Lam ("_F", L.App (L.Var "_F", L.Lam ("_x",
+            L.App (L.App (L.App (L.Var "_y", L.Var "_y"), L.Var "_F"),
+              L.Var "_x"))))),
+          L.Lam ("_y", L.Lam ("_F", L.App (L.Var "_F", L.Lam ("_x",
+            L.App (L.App (L.App (L.Var "_y", L.Var "_y"), L.Var "_F"),
+              L.Var "_x")))))) in
+        (* L.Lam ("_f",
           L.App (L.Lam ("_x", L.App (L.Var "_f", L.App (L.Var "_x", L.Var "_x"))),
-            L.Lam ("_x", L.App (L.Var "_f", L.App (L.Var "_x", L.Var "_x"))))) in
+            L.Lam ("_x", L.App (L.Var "_f", L.App (L.Var "_x", L.Var "_x")))))
+      in *)
       L.App (L.Lam (x, compile z),
         L.App (ycomb, L.Lam (x, compile (Lam (xs, y)))))
+  | And (x, y) ->
+      compile (If (x, y, False))
+  | Or (x, y) ->
+      compile (If (x, True, y))
+  | Pair (x, y) ->
+      L.Lam ("_f",
+        L.App (L.App (L.Var "_f", compile x), compile y))
+  | Fst (x) ->
+      L.App (compile x, L.Lam ("_x", L.Lam ("_", L.Var "_x")))
+  | Snd (x) ->
+      L.App (compile x, L.Lam ("_", L.Lam ("_y", L.Var "_y")))
+  | Nil ->
+      L.Lam ("_c", L.Lam ("_n", L.Var "_n"))
+  | IsNil (x) ->
+      L.App (L.App (compile x, L.Lam ("_", L.Lam ("_", f))), t)
+  | Cons (x, y) ->
+      L.Lam ("_c", L.Lam ("_n",
+        L.App (L.App (L.Var "_c", compile x),
+          L.App (L.App (compile y, L.Var "_c"), L.Var "_n"))))
+  | Head (x) ->
+      L.App (L.App (compile x, L.Lam ("_x", L.Lam ("_", L.Var "_x"))), f)
+  | Tail (x) ->
+      compile (Fst (App (x,
+        [Lam (["_x"; "_p"], Pair (Snd (Var "_p"),
+          Cons (Var "_x", Snd (Var "_p")))); Pair (Nil, Nil)])))
