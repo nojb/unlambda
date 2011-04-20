@@ -2,18 +2,17 @@
   open Miniml
 %}
 
-%token SEMI IS_ZERO
-%token REC
-%token PRINT_INT TIMESTIMES
+%token IS_ZERO
+%token REC TIMES
+%token TIMESTIMES MINUS
 %token LPAREN RPAREN TRUE FALSE EOF
 %token LET EQ IN FUN ARROW IF THEN ELSE
 %token PLUS
 %token <string> IDENT
 %token <int> INT
 
-%left letprec
-%left SEMI
-%left PLUS
+%left PLUS MINUS
+%left TIMES
 %left TIMESTIMES
 
 %type <Miniml.exp> prog
@@ -42,16 +41,18 @@ simple_exp:
 exp:
     simple_exp
   { $1 }
-  | LET IDENT EQ exp IN exp %prec letprec
+  | LET IDENT EQ exp IN exp
   { Let ($2, $4, $6) }
-  | LET REC IDENT LPAREN RPAREN EQ exp IN exp %prec letprec
+  | LET IDENT LPAREN RPAREN EQ exp IN exp
+  { Let ($2, Lam ([], $6), $8) }
+  | LET x = IDENT xs = nonempty_list (IDENT) EQ y = exp IN z = exp
+  { Let (x, Lam (xs, y), z) }
+  | LET REC IDENT LPAREN RPAREN EQ exp IN exp
   { Rec ($3, ([], $7), $9) }
-  | LET REC x = IDENT xs = nonempty_list (IDENT) EQ y = exp IN z = exp %prec letprec
+  | LET REC x = IDENT xs = nonempty_list (IDENT) EQ y = exp IN z = exp
   { Rec (x, (xs, y), z) }
   | IS_ZERO simple_exp
   { IsZero $2 }
-  | PRINT_INT simple_exp
-  { PrintInt $2 }
   | simple_exp LPAREN RPAREN
   { App ($1, []) }
   | x = simple_exp xs = nonempty_list (simple_exp)
@@ -62,10 +63,12 @@ exp:
   { Lam (xs, y) }
   | IF exp THEN exp ELSE exp
   { If ($2, $4, $6) }
-  | simple_exp PLUS simple_exp
+  | exp PLUS exp
   { Add ($1, $3) }
-  | simple_exp TIMESTIMES simple_exp
+  | exp TIMES exp
+  { Mul ($1, $3) }
+  | exp MINUS exp
+  { Sub ($1, $3) }
+  | exp TIMESTIMES exp
   { Pow ($1, $3) }
-  | exp SEMI exp
-  { Seq ($1, $3) }
   ;

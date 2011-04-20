@@ -7,12 +7,14 @@ rule token = parse
   { token lexbuf }
   | "is_zero"
   { IS_ZERO }
-  | ';'
-  { SEMI }
+  | '-'
+  { MINUS }
   | '+'
   { PLUS }
   | "**"
   { TIMESTIMES }
+  | '*'
+  { TIMES }
   | '('
   { LPAREN }
   | ')'
@@ -39,8 +41,6 @@ rule token = parse
   { THEN }
   | "else"
   { ELSE }
-  | "print_int"
-  { PRINT_INT }
   | ['a'-'z']['a'-'z''0'-'9''_']* as ident
   { IDENT ident }
   | ['0'-'9']+ as int

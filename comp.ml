@@ -6,8 +6,8 @@ let compile inch outch =
           (Miniml_parser.prog Miniml_lexer.token
             (Lexing.from_channel inch))))) in
 
-let compile1 inch outch =
-  Lambda.output outch
+let lambda inch outch =
+  Lambda.print_lambda
     (Miniml.compile
       (Miniml_parser.prog Miniml_lexer.token
         (Lexing.from_channel inch))) in
@@ -18,7 +18,19 @@ let eval inch =
       (Lambda.abstract
         (Miniml.compile
           (Miniml_parser.prog Miniml_lexer.token
+            (Lexing.from_channel inch))))) in
+
+let unlambda inch =
+    (Lambda.unlambda
+      (Lambda.abstract
+        (Miniml.compile
+          (Miniml_parser.prog Miniml_lexer.token
             (Lexing.from_channel inch)))))
 in
-  ignore (eval stdin)
-  (* Printf.fprintf stdout "%t\n%!" (compile stdin) *)
+  lambda stdin stdout;
+  (* let x = unlambda stdin in
+  print_endline "about to eval";
+  print_int (Unlambda.natify (Unlambda.eval x));
+  print_newline () *)
+  (* ignore (eval stdin) *)
+(*  Printf.fprintf stdout "%t\n%!" (compile stdin) *)
