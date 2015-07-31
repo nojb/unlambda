@@ -63,9 +63,6 @@ let rec compile = function
       L.Lam ("_f", L.Lam ("_z",
         L.App (L.App (compile (Int (n-1)), L.Var "_f"),
           L.App (L.Var "_f", L.Var "_z"))))
-      (* L.Lam ("_f", L.Lam ("_z",
-        L.App (L.Var "_f", L.App (L.App (compile (Int (n-1)), L.Var "_f"),
-          L.Var "_z")))) *)
   | IsZero (x) ->
       L.App (L.App (compile x, L.Lam ("_", f)), t)
   | Add (x, y) ->
@@ -93,10 +90,6 @@ let rec compile = function
           L.Lam ("_y", L.Lam ("_F", L.App (L.Var "_F", L.Lam ("_x",
             L.App (L.App (L.App (L.Var "_y", L.Var "_y"), L.Var "_F"),
               L.Var "_x")))))) in
-        (* L.Lam ("_f",
-          L.App (L.Lam ("_x", L.App (L.Var "_f", L.App (L.Var "_x", L.Var "_x"))),
-            L.Lam ("_x", L.App (L.Var "_f", L.App (L.Var "_x", L.Var "_x")))))
-      in *)
       L.App (L.Lam (x, compile z),
         L.App (ycomb, L.Lam (x, compile (Lam (xs, y)))))
   | And (x, y) ->

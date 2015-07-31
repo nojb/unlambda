@@ -14,6 +14,6 @@ let compile inch =
 let () =
   let x = compile stdin in
   Format.printf "%a\n%!"
-    Lambda.pr_lambda x;
+    Lambda.pr_unlambda x;
   let y = Lambda.eval M.empty x in
   Format.printf "%d\n%!" (Lambda.natify y)

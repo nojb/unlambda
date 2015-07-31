@@ -30,6 +30,11 @@ and pr_lambda ppf = function
 let print_lambda =
   pr_lambda std_formatter
 
+let rec pr_unlambda ppf = function
+  | Var x -> fprintf ppf "$%s" x
+  | Lam (x, y) -> fprintf ppf "^%s%a" x pr_unlambda y
+  | App (x, y) -> fprintf ppf "`%a%a" pr_unlambda x pr_unlambda y
+
 let rec eval env = function
   | Var x -> M.find x env
   | Lam (x, y) -> Cls (fun u -> eval (M.add x u env) y)
